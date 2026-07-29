@@ -57,14 +57,30 @@ Core functionality includes:
 - Create files and directories
 - Delete files and directories
 - Rename files and directories
+- Copying and Pasting files and directories
 
-- Optimized for keyboard navigation to maximize productivity.
-    - q/Escape: Exit
-    - a: Create a new file/folder
-    - d: Delete a file/folder
-    - r: Rename a file/folder
-    - Left Arrow/Enter: Enter a folder or open a file
-    - Right Arrow: Go back
+- Optimized for keyboard navigation to maximize productivity, powered with vim keys.
+
+---
+
+## Usage
+
+CFM is optimized for keyboard navigation to maximize productivity powered with vim keys
+
+| Key(s) | Function |
+| ------ | -------- |
+| <kbd>h</kbd> <kbd>Enter</kbd> <kbd>Left Arrow</kbd> | Go Back (Parent Directory) |
+| <kbd>l</kbd> <kbd>Right Arrow</kbd> | Enter Directory |
+| <kbd>j</kbd> <kbd>Down Arrow</kbd> | Navigate to the bottom |
+| <kbd>k</kbd> <kbd>Up Arrow</kbd> | Navigate to the top |
+| <kbd>gg</kbd>| Move to the top |
+| <kbd>G (Shift + G)</kbd>| Move to the bottom |
+| <kbd>c</kbd> <kbd>y</kbd> | Copy a file/folder |
+| <kbd>p</kbd>| Paste a file/folder |
+| <kbd>q</kbd> <kbd>Esc</kbd> | Quit CFM |
+| <kbd>a</kbd> | Create a new file/folder |
+| <kbd>d</kbd> | Delete a file/folder |
+| <kbd>r</kbd> | Rename a file/folder |
 
 ---
 
