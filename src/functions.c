@@ -1,6 +1,7 @@
 #include "functions.h"
 #include "helper_functions.h"
 #include "tui_functions.h"
+#include "image_preview.h"
 #include <dirent.h>
 #include <ncurses.h>
 #include <stdio.h>
@@ -154,6 +155,11 @@ void open_file(const char *filename) {
 }
 
 void preview_file(char *items[], int selected) {
+  if (!items || !items[selected]) {
+    clear_image_preview();
+    return;
+  }
+
   char buffer[BUFFER_SIZE];
   char command[BUFFER_SIZE];
   int y_level = 3;
@@ -166,9 +172,21 @@ void preview_file(char *items[], int selected) {
   mvvline(0, SIDEBAR_WIDTH, ACS_VLINE, LINES);
 
   int preview_width = COLS - x_level - 10;
+  int preview_height = LINES - y_level - 2;
 
   mvprintw(1, x_level, "Previewing File: %s", items[selected]);
   mvhline(2, SIDEBAR_WIDTH, ACS_HLINE, COLS);
+
+  if (is_image_file(items[selected])) {
+    for (int i = 0; i < preview_height; i++) {
+      mvhline(y_level + i, x_level, ' ', COLS - x_level);
+    }
+    refresh();
+    draw_image_preview(items[selected], x_level, y_level, preview_width, preview_height);
+    return;
+  } else {
+    clear_image_preview();
+  }
 
   if (is_dir(items[selected])) {
     DIR *dir = opendir(items[selected]);
