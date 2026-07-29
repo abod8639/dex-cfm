@@ -1,6 +1,7 @@
 #include "helper_functions.h"
 #include "functions.h"
 #include <dirent.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -100,6 +101,93 @@ int rmdir_p(const char *path) {
 
   closedir(dr);
   return remove(path);
+}
+
+int copy_file(const char *src_path, const char *dst_path) {
+  FILE *src = fopen(src_path, "rb");
+  if (!src)
+    return -1;
+
+  FILE *dst = fopen(dst_path, "wb");
+  if (!dst) {
+    fclose(src);
+    return -1;
+  }
+
+  char buffer[8192];
+  size_t n;
+
+  while ((n = fread(buffer, 1, sizeof(buffer), src)) > 0) {
+    if (fwrite(buffer, 1, n, dst) != n) {
+      fclose(src);
+      fclose(dst);
+      return -1;
+    }
+  }
+
+  struct stat st;
+
+  if (stat(src_path, &st) == 0)
+    chmod(dst_path, st.st_mode);
+
+  fclose(src);
+  fclose(dst);
+
+  return 0;
+}
+
+int copy_dir(const char *src, const char *dst) {
+  DIR *dir = opendir(src);
+  if (!dir)
+    return -1;
+
+  struct stat st;
+
+  if (stat(src, &st) == -1) {
+    closedir(dir);
+    return -1;
+  }
+
+  if (mkdir(dst, st.st_mode) == -1 && errno != EEXIST) {
+    closedir(dir);
+    return -1;
+  }
+
+  struct dirent *entry;
+
+  while ((entry = readdir(dir)) != NULL) {
+
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+      continue;
+
+    char src_path[PATH_MAX];
+    char dst_path[PATH_MAX];
+
+    snprintf(src_path, sizeof(src_path), "%s/%s", src, entry->d_name);
+
+    snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, entry->d_name);
+
+    if (stat(src_path, &st) == -1)
+      continue;
+
+    if (S_ISDIR(st.st_mode)) {
+
+      if (copy_dir(src_path, dst_path) != 0) {
+        closedir(dir);
+        return -1;
+      }
+
+    } else if (S_ISREG(st.st_mode)) {
+
+      if (copy_file(src_path, dst_path) != 0) {
+        closedir(dir);
+        return -1;
+      }
+    }
+  }
+
+  closedir(dir);
+  return 0;
 }
 
 void freeitems(char **items, int count) {

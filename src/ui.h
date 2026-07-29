@@ -2,6 +2,6 @@
 #define UI_H
 #include <dirent.h>
 
-void create_ui(int ch, char *items[], int count, int selected);
+void create_ui(int ch, char *items[], int count, int selected, int scroll);
 
 #endif

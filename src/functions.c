@@ -15,6 +15,8 @@
 #define PREVIEW_MARGIN 4
 #define FOLDER_FILES_COLOR 2
 
+char clipboard[PATH_MAX];
+
 void create_folder_file(char *items[], int selected, int *count) {
   FILE *temp_file = NULL;
   char filename[BUFFER_SIZE];
@@ -168,8 +170,6 @@ void preview_file(char *items[], int selected) {
   mvprintw(1, x_level, "Previewing File: %s", items[selected]);
   mvhline(2, SIDEBAR_WIDTH, ACS_HLINE, COLS);
 
-  DIR *dir = opendir(items[selected]);
-
   if (is_dir(items[selected])) {
     DIR *dir = opendir(items[selected]);
     if (!dir) {
@@ -210,6 +210,61 @@ void preview_file(char *items[], int selected) {
 
   pclose(tmp);
   refresh();
+}
+
+void copy_to_clipboard(char *items[], int selected) {
+  char cwd[PATH_MAX];
+
+  getcwd(cwd, sizeof(cwd));
+  snprintf(clipboard, sizeof(clipboard), "%s/%s", cwd, items[selected]);
+
+  status_message("Copied %s", items[selected]);
+}
+
+void paste_file(char *items[], int *count) {
+  if (clipboard[0] == '\0') {
+    status_message("Clipboard is empty");
+    return;
+  }
+
+  char cwd[PATH_MAX];
+  char destination[PATH_MAX];
+
+  getcwd(cwd, sizeof(cwd));
+
+  char *filename = strrchr(clipboard, '/');
+  filename = filename ? filename + 1 : clipboard;
+
+  snprintf(destination, sizeof(destination), "%s/%s", cwd, filename);
+
+  if (strcmp(clipboard, destination) == 0) {
+    status_message("Source and destination are the same");
+    return;
+  }
+
+  struct stat st;
+
+  if (stat(clipboard, &st) == -1) {
+    status_message("Failed to access clipboard");
+    return;
+  }
+
+  int ret;
+
+  if (S_ISDIR(st.st_mode))
+    ret = copy_dir(clipboard, destination);
+  else
+    ret = copy_file(clipboard, destination);
+
+  if (ret != 0) {
+    status_message("Paste failed");
+    return;
+  }
+
+  freeitems(items, *count);
+  *count = loaddirectory(".", items);
+
+  status_message("Pasted %s", filename);
 }
 
 int goback(char **items, int selected, int *count) {

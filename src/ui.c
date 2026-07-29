@@ -7,7 +7,6 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <wchar.h>
 
 #define DIR_COLOR 1
 #define HEADER_HEIGHT 2
@@ -15,7 +14,7 @@
 #define CONTENT_START HEADER_HEIGHT
 #define CONTENT_END (LINES - FOOTER_HEIGHT)
 
-void create_ui(int ch, char *items[], int count, int selected) {
+void create_ui(int ch, char *items[], int count, int selected, int scroll) {
   setlocale(LC_ALL, "");
   initscr();
   echo();
@@ -23,6 +22,8 @@ void create_ui(int ch, char *items[], int count, int selected) {
   curs_set(0);
   timeout(-1);
   keypad(stdscr, TRUE);
+
+  int visible_rows = CONTENT_END - CONTENT_START;
 
   if (has_colors() == FALSE) {
     endwin();
@@ -36,20 +37,22 @@ void create_ui(int ch, char *items[], int count, int selected) {
 
   while (1) {
     clear();
-    for (int i = 0; i < count && CONTENT_START + i < CONTENT_END; i++) {
+    for (int i = 0; i < visible_rows && scroll + i < count; i++) {
+      int index = scroll + i;
       int row = CONTENT_START + i;
-      if (i == selected)
+
+      if (index == selected)
         attron(A_REVERSE);
-      if (is_dir(items[i])) {
+
+      if (is_dir(items[index])) {
         attron(COLOR_PAIR(DIR_COLOR));
-        const wchar_t *icon = file_icons(items[i]);
-        mvprintw(row, 0, "%ls  %s/", icon, items[i]);
+        mvprintw(row, 0, "%ls %s/", file_icons(items[index]), items[index]);
         attroff(COLOR_PAIR(DIR_COLOR));
       } else {
-        const wchar_t *icon = file_icons(items[i]);
-        mvprintw(row, 0, "%ls  %s", icon, items[i]);
+        mvprintw(row, 0, "%ls %s", file_icons(items[index]), items[index]);
       }
-      if (i == selected)
+
+      if (index == selected)
         attroff(A_REVERSE);
     }
 
@@ -62,17 +65,24 @@ void create_ui(int ch, char *items[], int count, int selected) {
     ch = getch();
     switch (ch) {
     case KEY_UP:
+    case 'k':
       if (selected > 0)
         selected--;
+      if (selected < scroll)
+        scroll--;
       break;
 
     case KEY_DOWN:
+    case 'j':
       if (selected < count - 1)
         selected++;
+      if (selected >= scroll + visible_rows)
+        scroll++;
       break;
 
     case '\n':
     case KEY_RIGHT:
+    case 'l':
       if (is_dir(items[selected])) {
         if (changedirectory(items, selected, &count))
           selected = 0;
@@ -82,8 +92,34 @@ void create_ui(int ch, char *items[], int count, int selected) {
       break;
 
     case KEY_LEFT:
+    case 'h':
       if (goback(items, selected, &count))
         selected = 0;
+      break;
+
+    case 'g': {
+      int next = getch();
+      if (next == 'g') {
+        selected = 0;
+        scroll = 0;
+      }
+      break;
+    }
+
+    case 'G':
+      selected = count - 1;
+      scroll = count - visible_rows;
+      if (scroll < 0)
+        scroll = 0;
+      break;
+
+    case 'c':
+    case 'y':
+      copy_to_clipboard(items, selected);
+      break;
+
+    case 'p':
+      paste_file(items, &count);
       break;
 
     case 'a':

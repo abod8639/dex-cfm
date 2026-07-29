@@ -12,6 +12,7 @@ int main(int argc, char *argv[]) {
   char *items[MAX_ITEMS];
   int count = 0;
   int selected = 0;
+  int scroll = 0;
 
   DIR *dr = opendir(".");
   struct dirent *in_file;
@@ -42,7 +43,7 @@ int main(int argc, char *argv[]) {
 
   int ch;
 
-  create_ui(ch, items, count, selected);
+  create_ui(ch, items, count, selected, scroll);
 
   return 0;
 }

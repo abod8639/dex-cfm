@@ -6,10 +6,18 @@
 #define BUFFER_SIZE 512
 
 void create_folder_file(char *items[], int selected, int *count);
+
 void rename_file(char *items[], int selected, int *count);
+
 void delfile(char *items[], int selected, int *count, int ch);
+
 void open_file(const char *filename);
+
 void preview_file(char *items[], int selected);
+
+void copy_to_clipboard(char *items[], int selected);
+void paste_file(char *items[], int *count);
+
 int goback(char **items, int selected, int *count);
 int changedirectory(char *items[], int selected, int *count);
 

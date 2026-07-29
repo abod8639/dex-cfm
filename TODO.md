@@ -8,6 +8,8 @@ New Features to add in CFM
 - [x] Deleting Files/Folders ✅ 5/7/2026
 - [x] Renaming Files ✅ 5/7/2026
 - [x] Creating Nested Folders ✅ 8/7/2026
+- [ ] Moving Files and Folders
+- [x] Copying & Pasting Files and Folders ✅ 29/7/2026
 
 ## TUI:
 

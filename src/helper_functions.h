@@ -4,11 +4,19 @@
 #include <sys/types.h>
 
 void human_size(off_t bytes, char *buf, size_t size);
+
 int is_text_file(const char *filename);
+
 bool file_exists(const char *filename);
+
 int is_dir(const char *path);
+
 int mkdir_p(const char *path, mode_t mode);
 int rmdir_p(const char *path);
+
+int copy_dir(const char *src, const char *dst);
+int copy_file(const char *src, const char *dst);
+
 void freeitems(char *items[], int count);
 int loaddirectory(const char *path, char *items[]);
 
