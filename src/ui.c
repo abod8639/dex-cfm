@@ -7,12 +7,16 @@
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define DIR_COLOR 1
 #define HEADER_HEIGHT 2
 #define FOOTER_HEIGHT 1
 #define CONTENT_START HEADER_HEIGHT
 #define CONTENT_END (LINES - FOOTER_HEIGHT)
+#define SIDEBAR_WIDTH COLS / 3
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 void create_ui(int ch, char *items[], int count, int selected, int scroll) {
   setlocale(LC_ALL, "");
@@ -24,6 +28,7 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
   keypad(stdscr, TRUE);
 
   int visible_rows = CONTENT_END - CONTENT_START;
+  int max_name_width = SIDEBAR_WIDTH - 4;
 
   if (has_colors() == FALSE) {
     endwin();
@@ -46,10 +51,13 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
 
       if (is_dir(items[index])) {
         attron(COLOR_PAIR(DIR_COLOR));
-        mvprintw(row, 0, "%ls %s/", file_icons(items[index]), items[index]);
+        mvprintw(row, 0, "%ls ", file_icons(items[index]));
+        mvaddnstr(row, 2, items[index], max_name_width);
+        mvaddch(row, 2 + MIN((int)strlen(items[index]), max_name_width), '/');
         attroff(COLOR_PAIR(DIR_COLOR));
       } else {
-        mvprintw(row, 0, "%ls %s", file_icons(items[index]), items[index]);
+        mvprintw(row, 0, "%ls ", file_icons(items[index]));
+        mvaddnstr(row, 2, items[index], max_name_width);
       }
 
       if (index == selected)
