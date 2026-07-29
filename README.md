@@ -38,6 +38,7 @@ CFM is a lightweight terminal file manager written entirely in C. It is designed
 ## Requirements
 
 - Ncurses
+- fd (If not installed, search feature won't work)
 - GCC
 - pkg-config
 
@@ -77,6 +78,7 @@ CFM is optimized for keyboard navigation to maximize productivity powered with v
 | <kbd>G (Shift + G)</kbd>| Move to the bottom |
 | <kbd>c</kbd> <kbd>y</kbd> | Copy a file/folder |
 | <kbd>p</kbd>| Paste a file/folder |
+| <kbd>s</kbd> <kbd>/</kbd>| Search a file |
 | <kbd>q</kbd> <kbd>Esc</kbd> | Quit CFM |
 | <kbd>a</kbd> | Create a new file/folder |
 | <kbd>d</kbd> | Delete a file/folder |

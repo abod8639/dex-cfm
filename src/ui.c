@@ -84,8 +84,10 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
     case KEY_RIGHT:
     case 'l':
       if (is_dir(items[selected])) {
-        if (changedirectory(items, selected, &count))
+        if (changedirectory(items, selected, &count)) {
           selected = 0;
+          scroll = 0;
+        }
       } else {
         open_file(items[selected]);
       }
@@ -120,6 +122,11 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
 
     case 'p':
       paste_file(items, &count);
+      break;
+
+    case '/':
+    case 's':
+      search(items, &count, &selected, &scroll);
       break;
 
     case 'a':

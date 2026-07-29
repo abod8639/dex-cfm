@@ -267,6 +267,64 @@ void paste_file(char *items[], int *count) {
   status_message("Pasted %s", filename);
 }
 
+void search(char *items[], int *count, int *selected, int *scroll) {
+  def_prog_mode();
+  endwin();
+
+  const char *cmd = "if command -v fd >/dev/null 2>&1; "
+                    "then fd; "
+                    "else fdfind; "
+                    "fi | fzf";
+
+  FILE *fp = popen(cmd, "r");
+  if (!fp) {
+    reset_prog_mode();
+    refresh();
+    return;
+  }
+
+  char choice[PATH_MAX];
+  char *res = fgets(choice, sizeof(choice), fp);
+  pclose(fp);
+
+  reset_prog_mode();
+  refresh();
+  clear();
+
+  if (!res) {
+    return;
+  }
+
+  choice[strcspn(choice, "\n")] = '\0';
+
+  char dir[PATH_MAX];
+  strcpy(dir, choice);
+
+  char *filename = strrchr(dir, '/');
+
+  if (filename) {
+    *filename = '\0';
+    filename++;
+
+    if (chdir(dir) == -1)
+      return;
+  } else {
+    filename = dir;
+  }
+
+  freeitems(items, *count);
+  *count = loaddirectory(".", items);
+  for (int i = 0; i < *count; i++) {
+    if (strcmp(items[i], filename) == 0) {
+      *selected = i;
+      *scroll = *selected;
+      if (*scroll < 0)
+        *scroll = 0;
+      break;
+    }
+  }
+}
+
 int goback(char **items, int selected, int *count) {
   if (chdir("..") == -1) {
     perror("Error Occured");

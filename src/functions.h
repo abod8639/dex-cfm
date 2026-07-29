@@ -18,6 +18,8 @@ void preview_file(char *items[], int selected);
 void copy_to_clipboard(char *items[], int selected);
 void paste_file(char *items[], int *count);
 
+void search(char *items[], int *count, int *selected, int *scroll);
+
 int goback(char **items, int selected, int *count);
 int changedirectory(char *items[], int selected, int *count);
 
