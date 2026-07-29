@@ -2,6 +2,7 @@
 #include "helper_functions.h"
 #include "tui_functions.h"
 #include "image_preview.h"
+#include "syntax.h"
 #include <dirent.h>
 #include <ncurses.h>
 #include <stdio.h>
@@ -219,14 +220,30 @@ void preview_file(char *items[], int selected) {
     break;
   }
 
-  snprintf(command, sizeof(command), "cat \"%s\" 2>/dev/null", items[selected]);
-  FILE *tmp = popen(command, "r");
-
-  while (fgets(buffer, sizeof(buffer), tmp)) {
-    mvaddnstr(y_level++, x_level, buffer, preview_width);
+  FILE *fp = fopen(items[selected], "r");
+  if (!fp) {
+    mvprintw(y_level++, x_level, "Error: Cannot open file");
+    return;
   }
 
-  pclose(tmp);
+  LangType lang = get_lang_type(items[selected]);
+  init_syntax_colors();
+
+  int in_multiline_comment = 0;
+  while (fgets(buffer, sizeof(buffer), fp) && y_level < LINES - 2) {
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+      buffer[len - 1] = '\0';
+    }
+    
+    if (lang != LANG_NONE) {
+      print_highlighted_line(y_level++, x_level, buffer, preview_width, &in_multiline_comment, lang);
+    } else {
+      mvaddnstr(y_level++, x_level, buffer, preview_width);
+    }
+  }
+
+  fclose(fp);
   refresh();
 }
 
