@@ -29,7 +29,7 @@ CFM is a lightweight terminal file manager written entirely in C. It is designed
 
 ---
 
-## It's lightweight, I swear
+## Performance
 
 ![usage](assets/cfm-usage.png)
 
@@ -59,8 +59,11 @@ Core functionality includes:
 - Delete files and directories
 - Rename files and directories
 - Copying and Pasting files and directories
+- Moving files and directories
 
 - Optimized for keyboard navigation to maximize productivity, powered with vim keys.
+
+CFM uses an internel clipboard for processes like copying, moving and pasting
 
 ---
 
@@ -77,6 +80,7 @@ CFM is optimized for keyboard navigation to maximize productivity powered with v
 | <kbd>gg</kbd>| Move to the top |
 | <kbd>G (Shift + G)</kbd>| Move to the bottom |
 | <kbd>c</kbd> <kbd>y</kbd> | Copy a file/folder |
+| <kbd>x</kbd> | Cut a file/folder |
 | <kbd>p</kbd>| Paste a file/folder |
 | <kbd>s</kbd> <kbd>/</kbd>| Search a file |
 | <kbd>q</kbd> <kbd>Esc</kbd> | Quit CFM |

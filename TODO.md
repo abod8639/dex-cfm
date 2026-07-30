@@ -10,7 +10,7 @@ New Features to add in CFM
 - [x] Creating Nested Folders ✅ 8/7/2026
 - [x] Copying & Pasting Files and Folders ✅ 29/7/2026
 - [x] Search Files ✅ 29/7/2026
-- [ ] Moving Files and Folders
+- [x] Moving Files and Folders
 
 ## TUI:
 

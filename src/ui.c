@@ -66,6 +66,14 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
     }
 
     topbar();
+
+    if (count > 0) {
+      file_details(items, selected);
+      preview_file(items, selected);
+    } else {
+      mvprintw(CONTENT_START, 0, "(empty directory)");
+    }
+
     file_details(items, selected);
     preview_file(items, selected);
 
@@ -126,6 +134,12 @@ void create_ui(int ch, char *items[], int count, int selected, int scroll) {
 
     case 'c':
     case 'y':
+      clipboard_cut = 0;
+      copy_to_clipboard(items, selected);
+      break;
+
+    case 'x':
+      clipboard_cut = 1;
       copy_to_clipboard(items, selected);
       break;
 

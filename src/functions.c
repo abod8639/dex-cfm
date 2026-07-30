@@ -4,6 +4,7 @@
 #include "image_preview.h"
 #include "syntax.h"
 #include <dirent.h>
+#include <linux/limits.h>
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +19,7 @@
 #define FOLDER_FILES_COLOR 2
 
 char clipboard[PATH_MAX];
+int clipboard_cut = 0;
 
 void create_folder_file(char *items[], int selected, int *count) {
   FILE *temp_file = NULL;
@@ -160,6 +162,8 @@ void preview_file(char *items[], int selected) {
     clear_image_preview();
     return;
   }
+  if (!items || selected < 0 || !items[selected])
+    return;
 
   char buffer[BUFFER_SIZE];
   char command[BUFFER_SIZE];
@@ -247,7 +251,7 @@ void preview_file(char *items[], int selected) {
   refresh();
 }
 
-void copy_to_clipboard(char *items[], int selected) {
+void copy_to_clipboard(char **items, int selected) {
   char cwd[PATH_MAX];
 
   getcwd(cwd, sizeof(cwd));
@@ -256,50 +260,56 @@ void copy_to_clipboard(char *items[], int selected) {
   status_message("Copied %s", items[selected]);
 }
 
-void paste_file(char *items[], int *count) {
+void paste_file(char **items, int *count) {
   if (clipboard[0] == '\0') {
     status_message("Clipboard is empty");
     return;
   }
 
   char cwd[PATH_MAX];
-  char destination[PATH_MAX];
+  char dest[PATH_MAX];
 
   getcwd(cwd, sizeof(cwd));
 
   char *filename = strrchr(clipboard, '/');
   filename = filename ? filename + 1 : clipboard;
 
-  snprintf(destination, sizeof(destination), "%s/%s", cwd, filename);
-
-  if (strcmp(clipboard, destination) == 0) {
-    status_message("Source and destination are the same");
+  snprintf(dest, sizeof(dest), "%s/%s", cwd, filename);
+  if (strcmp(clipboard, dest) == 0) {
+    status_message("File Already Exists");
     return;
   }
 
   struct stat st;
-
   if (stat(clipboard, &st) == -1) {
     status_message("Failed to access clipboard");
     return;
   }
 
   int ret;
-
-  if (S_ISDIR(st.st_mode))
-    ret = copy_dir(clipboard, destination);
-  else
-    ret = copy_file(clipboard, destination);
+  if (S_ISDIR(st.st_mode)) {
+    if (clipboard_cut)
+      ret = move_dir(clipboard, dest);
+    else
+      ret = copy_dir(clipboard, dest);
+  } else {
+    if (clipboard_cut)
+      ret = move_file(clipboard, dest);
+    else
+      ret = copy_file(clipboard, dest);
+  }
 
   if (ret != 0) {
     status_message("Paste failed");
     return;
   }
-
   freeitems(items, *count);
   *count = loaddirectory(".", items);
-
-  status_message("Pasted %s", filename);
+  if (clipboard_cut) {
+    clipboard[0] = '\0';
+    clipboard_cut = 0;
+  }
+  status_message("Paste Done");
 }
 
 void search(char *items[], int *count, int *selected, int *scroll) {

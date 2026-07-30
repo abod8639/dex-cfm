@@ -5,6 +5,8 @@
 
 #define BUFFER_SIZE 512
 
+extern int clipboard_cut;
+
 void create_folder_file(char *items[], int selected, int *count);
 
 void rename_file(char *items[], int selected, int *count);

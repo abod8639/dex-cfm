@@ -136,6 +136,52 @@ int copy_file(const char *src_path, const char *dst_path) {
   return 0;
 }
 
+int move_file(const char *src, const char *dst) {
+  if (rename(src, dst) == 0)
+    return 0;
+
+  FILE *srcf = fopen(src, "rb");
+  if (!srcf)
+    return -1;
+
+  FILE *dstf = fopen(dst, "wb");
+  if (!dstf) {
+    fclose(srcf);
+    return -1;
+  }
+
+  char buffer[8192];
+  size_t n;
+  int success = 1;
+
+  while ((n = fread(buffer, 1, sizeof(buffer), srcf)) > 0) {
+    if (fwrite(buffer, 1, n, dstf) != n) {
+      success = 0;
+      break;
+    }
+  }
+
+  fclose(srcf);
+  fclose(dstf);
+
+  if (!success) {
+    remove(dst);
+    return -1;
+  }
+
+  struct stat st;
+
+  if (stat(src, &st) == 0)
+    chmod(dst, st.st_mode);
+
+  if (remove(src) != 0) {
+    remove(dst);
+    return -1;
+  }
+
+  return 0;
+}
+
 int copy_dir(const char *src, const char *dst) {
   DIR *dir = opendir(src);
   if (!dir)
@@ -187,6 +233,71 @@ int copy_dir(const char *src, const char *dst) {
   }
 
   closedir(dir);
+  return 0;
+}
+
+int move_dir(const char *src, const char *dst) {
+  if (rename(src, dst) == 0) {
+    return 0;
+  }
+
+  DIR *dir = opendir(src);
+  if (!dir)
+    return -1;
+
+  struct stat st;
+
+  if (stat(src, &st) == -1) {
+    closedir(dir);
+    return -1;
+  }
+
+  if (mkdir(dst, st.st_mode) == -1 && errno != EEXIST) {
+    closedir(dir);
+    return -1;
+  }
+
+  struct dirent *entry;
+
+  while ((entry = readdir(dir)) != NULL) {
+
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+      continue;
+
+    char src_path[PATH_MAX];
+    char dst_path[PATH_MAX];
+
+    int src_len =
+        snprintf(src_path, sizeof(src_path), "%s/%s", src, entry->d_name);
+    int dst_len =
+        snprintf(dst_path, sizeof(dst_path), "%s/%s", dst, entry->d_name);
+
+    if (src_len >= (int)sizeof(src_path) || dst_len >= (int)sizeof(dst_path)) {
+      closedir(dir);
+      return -1;
+    }
+
+    if (stat(src_path, &st) == -1)
+      continue;
+
+    if (S_ISDIR(st.st_mode)) {
+      if (move_dir(src_path, dst_path) != 0) {
+        closedir(dir);
+        return -1;
+      }
+    } else if (S_ISREG(st.st_mode)) {
+      if (move_file(src_path, dst_path) != 0) {
+        closedir(dir);
+        return -1;
+      }
+    }
+  }
+
+  closedir(dir);
+
+  if (rmdir(src) != 0) {
+    return -1;
+  }
   return 0;
 }
 
