@@ -15,6 +15,7 @@ int mkdir_p(const char *path, mode_t mode);
 int rmdir_p(const char *path);
 
 int move_file(const char *src, const char *dst);
+int move_dir(const char *src, const char *dst);
 
 int copy_dir(const char *src, const char *dst);
 int copy_file(const char *src, const char *dst);

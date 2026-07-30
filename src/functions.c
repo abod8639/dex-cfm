@@ -246,8 +246,6 @@ void paste_file(char **items, int *count) {
     return;
   }
 
-  status_message("%s", clipboard);
-
   struct stat st;
   if (stat(clipboard, &st) == -1) {
     status_message("Failed to access clipboard");
@@ -256,10 +254,10 @@ void paste_file(char **items, int *count) {
 
   int ret;
   if (S_ISDIR(st.st_mode)) {
-    // if (clipboard_cut)
-    //   ret = move_dir(clipboard, dest);
-    // else
-    //   ret = copy_dir(clipboard, dest);
+    if (clipboard_cut)
+      ret = move_dir(clipboard, dest);
+    else
+      ret = copy_dir(clipboard, dest);
   } else {
     if (clipboard_cut)
       ret = move_file(clipboard, dest);
@@ -277,7 +275,7 @@ void paste_file(char **items, int *count) {
     clipboard[0] = '\0';
     clipboard_cut = 0;
   }
-  status_message("Pasted");
+  status_message("Paste Done");
 }
 
 void search(char *items[], int *count, int *selected, int *scroll) {
