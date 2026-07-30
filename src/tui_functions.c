@@ -78,6 +78,9 @@ void permissions_to_string(mode_t mode, char *perm) {
 }
 
 void file_details(char *items[], int selected) {
+  if (!items || selected < 0 || !items[selected])
+    return;
+
   struct stat file_st;
   if (stat(items[selected], &file_st)) {
     clrtoeol();

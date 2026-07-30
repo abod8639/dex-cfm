@@ -136,6 +136,52 @@ int copy_file(const char *src_path, const char *dst_path) {
   return 0;
 }
 
+int move_file(const char *src, const char *dst) {
+  if (rename(src, dst) == 0)
+    return 0;
+
+  FILE *srcf = fopen(src, "rb");
+  if (!srcf)
+    return -1;
+
+  FILE *dstf = fopen(dst, "wb");
+  if (!dstf) {
+    fclose(srcf);
+    return -1;
+  }
+
+  char buffer[8192];
+  size_t n;
+  int success = 1;
+
+  while ((n = fread(buffer, 1, sizeof(buffer), srcf)) > 0) {
+    if (fwrite(buffer, 1, n, dstf) != n) {
+      success = 0;
+      break;
+    }
+  }
+
+  fclose(srcf);
+  fclose(dstf);
+
+  if (!success) {
+    remove(dst);
+    return -1;
+  }
+
+  struct stat st;
+
+  if (stat(src, &st) == 0)
+    chmod(dst, st.st_mode);
+
+  if (remove(src) != 0) {
+    remove(dst);
+    return -1;
+  }
+
+  return 0;
+}
+
 int copy_dir(const char *src, const char *dst) {
   DIR *dir = opendir(src);
   if (!dir)
